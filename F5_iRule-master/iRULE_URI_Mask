@@ -1,0 +1,20 @@
+when HTTP_REQUEST {
+set HOST [string tolower [HTTP::host]]
+set URI  [string tolower [HTTP::uri]] 
+
+if { $HOST contains "devtest.domain.com" } {
+#Disable SSL	
+SSL::disable serverside
+}
+
+if { $URI contains "/wdev/wweb.ll?wsession" } {
+HTTP::uri [string map {/wdev/wweb.ll?wsession /wdev/wweb.ll?FoldSession} [HTTP::uri]] 
+pool POOL-DEV2
+}
+}
+
+when HTTP_RESPONSE {
+if { [HTTP::header values Location] contains "/wdev/wweb.ll?FoldSession" } {
+HTTP::header replace Location [string map {/wdev/wweb.ll?FoldSession /wdev/wweb.ll?wsession} [HTTP::header value Location]]
+}
+}
